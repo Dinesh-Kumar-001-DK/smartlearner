@@ -1,0 +1,102 @@
+Build a full-stack AI-powered Learning Assistant web application with the following exact specifications:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STACK & ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Frontend: React 18 + Vite + Tailwind CSS + Framer Motion
+• Backend: Node.js + Express (MINIMAL — auth only)
+• Database: MongoDB + Mongoose (User model ONLY)
+• AI: Google Gemini 1.5 Flash via server-side proxy
+• State: Zustand with localStorage persistence (no DB for study data)
+• Auth: JWT (stored in localStorage, Protected Routes in React Router)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKEND (server/) — ONLY THESE FILES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. server.js — Express entry, connect MongoDB, mount 2 route groups
+2. models/User.js — Mongoose schema: name, email, password (hashed), avatar, timestamps
+3. controllers/authController.js — register (bcrypt hash), login (compare + sign JWT), me (verify JWT)
+4. middleware/authMiddleware.js — verifyJWT middleware using jsonwebtoken
+5. routes/authRoutes.js — POST /auth/register, POST /auth/login, GET /auth/me, PUT /auth/profile
+6. routes/geminiProxy.js — POST /api/gemini/chat, /summary, /explain, /flashcards, /quiz
+   • Each route takes { docText, ...params } and calls Gemini 1.5 Flash API
+   • GEMINI_API_KEY kept server-side only (never exposed to client)
+   • Flashcards: return JSON array [{ front, back }]
+   • Quiz: return JSON array [{ question, options:[4], correct:0-3, explanation }]
+
+.env: MONGO_URI, JWT_SECRET, GEMINI_API_KEY, CLIENT_URL, PORT=5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FRONTEND (client/src/) — COMPLETE STRUCTURE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAGES:
+• Landing.jsx — hero with animated Particles background, ScrambleText title, MagneticButton CTA
+• Auth.jsx — Login + Register tabs, form validation, JWT stored to localStorage on success
+• Dashboard.jsx — Stats cards (total docs, flashcards made, quizzes taken, avg score), recent activity list, animated number counters (NumberTicker component)
+• DocumentList.jsx — Grid of doc cards, drag-and-drop upload zone (react-dropzone), delete with confirm
+• DocumentDetail.jsx — 4 TABS: Chat | Summary | Flashcards | Quiz + embedded PDF viewer sidebar
+• Profile.jsx — Edit name/avatar, account stats
+
+COMPONENTS:
+• ui/Particles.jsx — Canvas constellation particles (80 dots, connecting lines < 100px)
+• ui/ScrambleText.jsx — Hover triggers character scramble → resolve animation (40ms per char)
+• ui/MagneticButton.jsx — onMouseMove calculates offset from button center, applies CSS transform
+• ui/GlowCard.jsx — Tracks mouse position, radial gradient follows cursor inside card
+• ui/NumberTicker.jsx — Counts from 0 to target value on mount (requestAnimationFrame)
+• ui/SplitReveal.jsx — Splits text into words, staggers them up with framer-motion
+• Flashcard.jsx — framer-motion rotateY 180° flip on click, ★ favorite toggle, front/back display
+• QuizCard.jsx — MCQ with A/B/C/D options, correct/incorrect color feedback, explanation reveal
+• ChatWindow.jsx — Message list with auto-scroll, typing indicator (3 bouncing dots), streaming feel
+• PDFViewer.jsx — react-pdf Document + Page components, zoom controls, page nav
+
+HOOKS:
+• useGemini.js — wrapper: async callGemini(endpoint, payload) → axios.post('/api/gemini/' + endpoint, payload, { headers: { Authorization: Bearer token } })
+• usePDF.js — uses pdfjs-dist to extract full text from File object, returns { text, pageCount }
+
+STORE (Zustand):
+• authStore.js — { user, token, login(data), logout(), isAuthenticated }
+• studyStore.js — { documents[], flashcards[], quizzes[], chats{}, addDocument, removeDocument, setSummary, addFlashcards, toggleFavorite, addMessage, saveQuiz, getStats() }
+  — persisted via zustand/middleware persist to localStorage key 'study-store'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI FEATURE IMPLEMENTATIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chat: system prompt = "Answer ONLY from this document: {docText.slice(0,8000)}". Include last 5 messages as history.
+
+Summary: prompt = "Create a comprehensive summary with: 1. Key Topics 2. Main Concepts 3. Important Details. Format with clear sections."
+
+Explain: prompt = "Explain the concept '{topic}' from this document. Use simple language, analogies, and 3 practical examples."
+
+Flashcards: prompt = "Generate {count} flashcards as JSON array ONLY: [{\"front\":\"question\",\"back\":\"answer\"}]. Cover the most important concepts."
+
+Quiz: prompt = "Generate {count} MCQ questions as JSON array ONLY: [{\"question\":\"...\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"correct\":0,\"explanation\":\"...\"}]. Use correct:0-3 as index."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UI & ANIMATION REQUIREMENTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Color theme: Deep dark (#03040a bg), gold accent (#f0c040), teal (#00d4b4), violet (#9b6dff)
+• Font: Syne (headings, 800 weight) + DM Sans (body, 300-500)
+• Tailwind custom config: extend colors with the above palette
+• All page transitions: framer-motion AnimatePresence with opacity + y slide
+• Flashcard flip: framer-motion animate={{ rotateY: flipped ? 180 : 0 }} with preserve-3d
+• Loading states: skeleton shimmer on cards, spinner on AI generation
+• Toast notifications: react-hot-toast for success/error feedback
+• ReactBits effects on landing: Particles bg + ScrambleText on h1 + MagneticButton on CTA
+• Dashboard stats: NumberTicker counting up from 0 on mount
+• Card hover: GlowCard with mouse-tracking radial gradient glow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT NOTES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• NO file upload to server — PDF blob URL stays in memory, text in Zustand
+• Parse Gemini JSON responses: JSON.parse(raw.replace(/```json|```/g, '').trim())
+• PDF text limit: first 8000 chars per Gemini call (Flash context limit)
+• Protected routes: wrap with component that checks authStore.isAuthenticated, redirect to /auth if false
+• Run backend on :5000, frontend Vite on :3000, proxy /api in vite.config.js
+
+Generate complete code for ALL files listed above, one at a time, starting with the backend then frontend. Include all imports.
+
+
+
