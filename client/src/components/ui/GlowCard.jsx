@@ -1,16 +1,15 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
 
 const GlowCard = ({ children, className = '', glowColor = 'violet' }) => {
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
-  const ref = useRef(null);
+  const cardRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    if (!ref.current) return;
-    const { left, top, width, height } = ref.current.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
     setMousePosition({ x, y });
   };
 
@@ -23,28 +22,31 @@ const GlowCard = ({ children, className = '', glowColor = 'violet' }) => {
   const colors = colorMap[glowColor] || colorMap.violet;
 
   return (
-    <motion.div
-      ref={ref}
+    <div
+      ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`relative overflow-hidden rounded-2xl ${className}`}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setMousePosition({ x: 50, y: 50 });
+      }}
+      className={`relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] ${className}`}
       style={{
         background: 'linear-gradient(135deg, rgba(26, 31, 42, 0.95), rgba(10, 13, 20, 0.98))',
         border: `1px solid ${colors.border}`
       }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.2 }}
     >
       <div
-        className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300"
+        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
         style={{
           opacity: isHovered ? 1 : 0,
           background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(${colors.rgb}, 0.2) 0%, transparent 60%)`
         }}
       />
-      {children}
-    </motion.div>
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
   );
 };
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 const NumberTicker = ({ value, duration = 2000, className = '' }) => {
