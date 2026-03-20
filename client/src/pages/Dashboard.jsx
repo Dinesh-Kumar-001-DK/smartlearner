@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FileText, Brain, Target, Trophy, ChevronRight, Clock } from 'lucide-react';
+import { FileText, Brain, Target, Trophy, ChevronRight, Clock, User, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
 import { useStudyStore } from '../stores/studyStore';
@@ -56,10 +56,30 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="font-heading font-bold text-3xl mb-2">
-            Welcome back, {user?.name?.split(' ')[0] || 'Learner'}!
-          </h1>
-          <p className="text-gray-400">Track your learning progress and continue studying</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-heading font-bold text-3xl mb-2">
+                Welcome back, {user?.name?.split(' ')[0] || 'Learner'}!
+              </h1>
+              <p className="text-gray-400">Track your learning progress and continue studying</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="font-medium">{user?.name}</p>
+                <p className="text-gray-400 text-sm">{user?.email}</p>
+              </div>
+              <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-teal-500 rounded-full flex items-center justify-center">
+                <User size={28} className="text-white" />
+              </div>
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-3 rounded-xl bg-dark-700 hover:bg-dark-600 transition-colors"
+                title="Profile Settings"
+              >
+                <Settings size={20} />
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

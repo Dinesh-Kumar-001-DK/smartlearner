@@ -45,7 +45,6 @@ const App = () => {
         <Route
           path="/"
           element={
-            <PublicRoute>
               <motion.div
                 variants={pageVariants}
                 initial="initial"
@@ -55,7 +54,6 @@ const App = () => {
               >
                 <Landing />
               </motion.div>
-            </PublicRoute>
           }
         />
         <Route
