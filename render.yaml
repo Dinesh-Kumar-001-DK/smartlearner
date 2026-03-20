@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ailearn-server
+    env: node
+    region: Singapore
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        value: 81b5da3a9bbc7659b4ded06bc621df99fb29678e0170fe235de49b33a0d123ce
+      - key: GEMINI_API_KEY
+        value: AIzaSyDU1tNoW1GdmEFSvHLSBCe6S5WWRUltDTE
+      - key: CLIENT_URL
+        value: https://smartlearner.vercel.app
+      - key: PORT
+        value: 10000

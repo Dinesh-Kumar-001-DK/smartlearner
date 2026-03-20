@@ -48,7 +48,7 @@ const UploadScreen = ({ onFileSelect }) => {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`
-            border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
+            relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
             transition-all duration-300
             ${isDragging
               ? 'border-white bg-white/20'
@@ -57,14 +57,15 @@ const UploadScreen = ({ onFileSelect }) => {
           `}
           whileTap={{ scale: 0.98 }}
         >
+          {/* ✅ input is now correctly overlaid inside relative parent */}
           <input
             type="file"
             accept=".docx"
             onChange={handleFileInput}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
 
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3 pointer-events-none">
             <div className={`
               w-12 h-12 rounded-full flex items-center justify-center
               ${isDragging ? 'bg-white/30' : 'bg-white/20'}
